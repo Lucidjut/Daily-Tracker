@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bulk Quest">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<meta name="theme-color" content="#0B0A1A">
+<title>Bulk Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Dela+Gothic+One&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Night-city neon (default + dark) */
+:root{
+  --bg:#0B0A1A; --bg2:#12102A; --panel:#171433; --ink:#EAF4FF; --muted:#8E8BBE; --line:#2C2858;
+  --cyan:#23E6F7; --pink:#FF2E97; --volt:#F4EC4A; --good:#3DFFA8; --bad:#FF4D6D;
+  --glow-c:0 0 10px rgba(35,230,247,.55); --glow-p:0 0 12px rgba(255,46,151,.55);
+  --display:"Chakra Petch","Trebuchet MS",system-ui,sans-serif;
+  --jp:"Dela Gothic One","Hiragino Sans","Yu Gothic",sans-serif;
+  --body:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --cut:12px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+/* Daylight variant for light-mode viewers */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#F1EEFB; --bg2:#E7E2F7; --panel:#FFFFFF; --ink:#1A1433; --muted:#5E5886; --line:#D3CCEC;
+    --cyan:#0092AD; --pink:#D1006E; --volt:#8A6D00; --good:#0B8F5A; --bad:#C8243F;
+    --glow-c:none; --glow-p:none;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#F1EEFB; --bg2:#E7E2F7; --panel:#FFFFFF; --ink:#1A1433; --muted:#5E5886; --line:#D3CCEC;
+  --cyan:#0092AD; --pink:#D1006E; --volt:#8A6D00; --good:#0B8F5A; --bad:#C8243F;
+  --glow-c:none; --glow-p:none;
+}
+:root[data-theme="dark"]{
+  --bg:#0B0A1A; --bg2:#12102A; --panel:#171433; --ink:#EAF4FF; --muted:#8E8BBE; --line:#2C2858;
+  --cyan:#23E6F7; --pink:#FF2E97; --volt:#F4EC4A; --good:#3DFFA8; --bad:#FF4D6D;
+  --glow-c:0 0 10px rgba(35,230,247,.55); --glow-p:0 0 12px rgba(255,46,151,.55);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:15px/1.45 var(--body);-webkit-text-size-adjust:100%;
+  background-image:linear-gradient(transparent 0 calc(100% - 1px), color-mix(in srgb, var(--line) 45%, transparent) 0),
+                   linear-gradient(90deg, transparent 0 calc(100% - 1px), color-mix(in srgb, var(--line) 45%, transparent) 0);
+  background-size:32px 32px}
+/* CRT scanlines */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:30;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.08) 0 1px, transparent 1px 3px)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--volt);outline-offset:2px}
+.jp{font-family:var(--jp);font-weight:400}
+
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 104px}
+
+/* Hero: the level plate is the one loud thing */
+.hero{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;padding:12px 0 12px;
+  background:radial-gradient(circle, color-mix(in srgb, var(--pink) 22%, transparent) 1px, transparent 1.6px) 0 0/7px 7px, var(--bg2);
+  border-bottom:2px solid var(--pink);box-shadow:var(--glow-p)}
+.brand{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
+.brand .jp{color:var(--pink);font-size:15px;letter-spacing:.06em;text-shadow:var(--glow-p)}
+.brand .en{font-family:var(--display);font-weight:600;font-size:13px;color:var(--muted)}
+.plate{display:flex;align-items:center;gap:14px}
+.lv{position:relative;min-width:84px;text-align:center;padding:6px 10px 6px;background:var(--panel);
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+  box-shadow:inset 0 0 0 2px var(--cyan)}
+.lv small{display:block;font-family:var(--display);font-weight:700;font-size:12px;color:var(--cyan)}
+.lv b{display:block;font-family:var(--display);font-weight:700;font-size:42px;line-height:1;color:var(--ink);
+  text-shadow:-2px 0 var(--pink), 2px 0 var(--cyan)}
+.lv .jp{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+.xpcol{flex:1;min-width:0}
+.xptop{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;color:var(--muted)}
+.xptop strong{font-family:var(--display);font-size:19px;color:var(--volt)}
+.bar{height:14px;background:var(--bg);overflow:hidden;margin-top:6px;box-shadow:inset 0 0 0 1px var(--line);
+  clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--pink));box-shadow:var(--glow-c);transition:width .5s ease}
+.today-line{margin-top:6px;font-size:13px;color:var(--muted)}
+.today-line .g{color:var(--good);font-weight:600}.today-line .b{color:var(--bad);font-weight:600}
+
+h1{font-family:var(--display);font-weight:700;font-size:26px;margin:18px 0 0;line-height:1.15}
+h1 .jp{display:block;font-size:12px;color:var(--cyan);margin-bottom:2px;text-shadow:var(--glow-c)}
+.sub{color:var(--muted);margin:2px 0 12px}
+h2{font-family:var(--display);font-size:18px;margin:22px 0 8px;display:flex;align-items:baseline;gap:8px}
+h2 .jp{font-size:11px;color:var(--pink)}
+
+/* Task list */
+.list{display:flex;flex-direction:column;gap:8px}
+.task{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:start;background:var(--panel);padding:10px 10px 10px 10px;
+  clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,0 100%);box-shadow:inset 3px 0 0 var(--line)}
+.glyph{width:36px;height:36px;display:grid;place-items:center;font-family:var(--jp);font-size:17px;color:var(--cyan);
+  box-shadow:inset 0 0 0 1px var(--line);background:var(--bg)}
+.task .time{font-family:var(--display);font-weight:600;font-size:12px;color:var(--muted)}
+.task .title{font-weight:600}
+.task .detail{font-size:13px;color:var(--muted);margin-top:2px}
+.task.open{box-shadow:inset 3px 0 0 var(--cyan)}
+.task.open .glyph{box-shadow:inset 0 0 0 1px var(--cyan), var(--glow-c)}
+.task.done{box-shadow:inset 3px 0 0 var(--good)}
+.task.done .glyph{color:var(--good)}
+.task.missed{box-shadow:inset 3px 0 0 var(--bad)}
+.task.missed .glyph{color:var(--bad)}
+.task.missed .title,.task.skipped .title{color:var(--muted)}
+.task.workout .glyph{color:var(--pink)}
+.act{align-self:center}
+.btn{border:0;padding:9px 14px;font-family:var(--display);font-weight:700;min-width:64px;
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.btn.go{background:var(--cyan);color:var(--bg);box-shadow:var(--glow-c)}
+.tag{display:inline-block;padding:7px 10px;font-family:var(--display);font-weight:700;font-size:13px;min-width:64px;text-align:center;border:0;background:transparent}
+.tag.done{background:color-mix(in srgb, var(--good) 16%, transparent);color:var(--good)}
+.tag.missed{background:color-mix(in srgb, var(--bad) 16%, transparent);color:var(--bad)}
+.tag.wait{color:var(--muted);font-weight:500;font-size:12px;min-width:0;font-family:var(--body)}
+.ex{margin:8px 0 0;padding:0;list-style:none;border-top:1px dashed var(--line)}
+.ex li{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.ex li span:last-child{color:var(--muted);white-space:nowrap}
+.ex label{display:flex;gap:8px;align-items:center}
+.ex input{width:18px;height:18px;accent-color:var(--good)}
+details summary{cursor:pointer;font-size:13px;color:var(--cyan);margin-top:4px}
+
+/* Countdown card */
+.gate{background:var(--panel);padding:14px;margin:6px 0 14px;box-shadow:inset 0 0 0 1px var(--pink), var(--glow-p);
+  clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+.gate b{font-family:var(--display);font-size:28px;color:var(--volt)}
+
+/* Week chips */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.chip{border:0;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);padding:7px 12px;font-family:var(--display);font-weight:600;flex:0 0 auto}
+.chip[aria-pressed="true"]{background:var(--pink);color:#fff;box-shadow:var(--glow-p)}
+
+/* Rewards */
+.card{background:var(--panel);padding:12px;clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,0 100%)}
+.reward{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.reward .lvreq{font-family:var(--display);font-weight:700;color:var(--volt)}
+.reward.locked .name{color:var(--muted)}
+.form{display:grid;grid-template-columns:1fr 96px;gap:8px;margin-top:4px}
+.form input{border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--bg);padding:9px 10px;width:100%}
+.form input:focus{box-shadow:inset 0 0 0 1px var(--cyan)}
+.form .btn{grid-column:1/-1}
+.empty{color:var(--muted);font-size:14px}
+
+/* Log + settings */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--panel);padding:10px;text-align:center;box-shadow:inset 0 -2px 0 var(--cyan)}
+.stat b{display:block;font-family:var(--display);font-size:22px}
+.stat span{font-size:12px;color:var(--muted)}
+.log{font-size:13px}
+.log div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.log .p{color:var(--good);font-weight:600}.log .m{color:var(--bad);font-weight:600}.log .r{color:var(--volt);font-weight:600}
+.log time{color:var(--muted);font-size:12px;display:block}
+.settings{display:grid;grid-template-columns:1fr 84px;gap:8px 10px;align-items:center}
+.settings input{border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--bg);padding:7px 8px;width:100%}
+.note{font-size:12px;color:var(--muted)}
+.danger{background:transparent;box-shadow:inset 0 0 0 1px var(--bad);color:var(--bad)}
+
+/* Bottom nav */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg2);border-top:2px solid var(--cyan);box-shadow:var(--glow-c);
+  padding-bottom:env(safe-area-inset-bottom,0px)}
+nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav button{background:none;border:0;padding:8px 4px 10px;font-family:var(--display);font-weight:600;font-size:13px;color:var(--muted);line-height:1.1}
+nav button .jp{display:block;font-size:10px;margin-bottom:2px}
+nav button[aria-current="page"]{color:var(--cyan);text-shadow:var(--glow-c)}
+
+/* Level-up: manga speed lines, the one big moment */
+.levelup{position:fixed;inset:0;z-index:40;display:none;place-items:center;overflow:hidden;background:rgba(6,5,16,.82)}
+.levelup.show{display:grid}
+.speed{position:absolute;inset:-50%;background:repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--volt) 55%, transparent) 0deg 1.2deg, transparent 1.2deg 6deg);
+  -webkit-mask:radial-gradient(circle, transparent 0 22%, #000 60%);mask:radial-gradient(circle, transparent 0 22%, #000 60%)}
+.levelup .box{position:relative;text-align:center;padding:24px 30px;background:var(--panel);max-width:86%;
+  box-shadow:inset 0 0 0 3px var(--pink), var(--glow-p);clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px))}
+.levelup .kicker{font-family:var(--jp);font-size:26px;color:var(--pink);text-shadow:var(--glow-p)}
+.levelup .en{font-family:var(--display);font-weight:700;color:var(--muted)}
+.levelup .big{font-family:var(--display);font-size:78px;font-weight:700;line-height:1;color:var(--volt);text-shadow:-3px 0 var(--pink), 3px 0 var(--cyan)}
+.levelup p{margin:8px 0 0}
+@media (prefers-reduced-motion: no-preference){
+  .levelup.show .speed{animation:spin 8s linear infinite}
+  .levelup.show .box{animation:pop .55s cubic-bezier(.2,1.5,.4,1)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes pop{0%{transform:scale(.5) skewX(-8deg);opacity:0}100%{transform:none;opacity:1}}
+}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:35;
+  background:var(--volt);color:#0B0A1A;padding:9px 16px;font-family:var(--display);font-weight:700;font-size:14px;display:none;
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.toast.show{display:block}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap" style="padding-bottom:0">
+  <div class="brand"><span class="jp">バルク・クエスト</span><span class="en">Bulk Quest</span></div>
+  <div class="plate">
+    <div class="lv" aria-label="Level"><small>LV</small><b id="lvNum">1</b><span class="jp">レベル</span></div>
+    <div class="xpcol">
+      <div class="xptop"><strong id="xpInto">0 / 100 XP</strong><span id="xpTotal">0 total</span></div>
+      <div class="bar" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar" style="width:0%"></i></div>
+      <div class="today-line" id="todayLine"></div>
+    </div>
+  </div>
+</div></header>
+
+<main class="wrap" id="view"></main>
+
+<nav><div class="in">
+  <button data-tab="today" aria-current="page"><span class="jp" aria-hidden="true">今日</span>Today</button>
+  <button data-tab="week"><span class="jp" aria-hidden="true">週</span>Week</button>
+  <button data-tab="rewards"><span class="jp" aria-hidden="true">報酬</span>Rewards</button>
+  <button data-tab="log"><span class="jp" aria-hidden="true">記録</span>Log</button>
+</div></nav>
+
+<div class="levelup" id="levelup" role="dialog" aria-live="assertive"><div class="speed" aria-hidden="true"></div><div class="box">
+  <div class="kicker">レベルアップ</div><div class="en">Level up</div><div class="big" id="luNum">2</div><p id="luMsg"></p>
+  <p><button class="btn go" id="luClose">Keep going</button></p>
+</div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------------- Plan data ---------------- */
+const SHAKE = "Milk 1.5 cups, whey 1 scoop, oats 60 g, banana, peanut butter 2 tbsp, chia 1 tbsp, honey 1 tbsp, creatine 5 g";
+const LUNCH = "Chicken 85 g, jasmine rice 375 g, broccoli 150 g, plus 12 oz 1% milk";
+const EGGS = "2 hard-boiled eggs";
+const SNACK = "Almonds 30 g, raisins 40 g, baby carrots 85 g";
+const BEEF = "Beef pasta: 4 oz beef in ½ cup marinara, 100 g (dry) whole-wheat pasta, 60 g spinach";
+const SALMON = "Pan-seared salmon 150 g, rice 200 g, broccoli 150 g, spinach 60 g";
+
+const WU = ["Warm-up: 5 min easy cardio + 2 lighter ramp-up sets", ""];
+const WORKOUTS = {
+  lowerA: {name:"Lower A", ex:[WU,["Barbell back squat","3 × 6–8"],["Romanian deadlift","3 × 8–10"],["Leg press","3 × 10–12"],["Seated leg curl","3 × 10–12"],["Standing calf raise","3 × 10–15"],["Cable crunch","2 × 12–15"]]},
+  upperS: {name:"Short Upper", ex:[["Warm-up: 3 min light cardio",""],["A1 Dumbbell bench press","3 × 8–12"],["A2 Lat pulldown","3 × 8–12"],["B1 One-arm dumbbell row","3 × 10–12/arm"],["B2 Machine lateral raise","3 × 12–15"],["C1 Triceps pushdown","2 × 10–12"],["C2 Incline dumbbell curl","2 × 10–12"]]},
+  lowerB: {name:"Lower B", ex:[WU,["Trap-bar or conventional deadlift","3 × 5–6"],["Bulgarian split squat","3 × 8–10/leg"],["Leg extension","3 × 12–15"],["Lying or seated leg curl","3 × 10–12"],["Seated calf raise","3 × 12–15"],["Hanging knee raise","2 × 10–15"]]},
+  upperB: {name:"Upper B", ex:[WU,["Barbell bench press","3 × 6–8"],["Pull-ups (weighted/assisted)","3 × 6–10"],["Seated cable row","3 × 10–12"],["Incline dumbbell press","2 × 8–12"],["Cable lateral raise","3 × 12–15"],["Cable fly","2 × 12–15"],["EZ-bar curl","2 × 10–12"],["Overhead cable triceps ext.","2 × 10–12"]]}
+};
+const T = (t,type,title,detail,wk) => ({t,type,title,detail,wk});
+function wfh(wk, sleepNote){ return [
+  T("06:00","sleep","Up on time",sleepNote),
+  T("06:00","water","Water 16 oz",""),
+  T("06:10","meal","Half shake + coffee","Blend the full shake, drink half now. "+SHAKE),
+  T("07:00","workout",WORKOUTS[wk].name+" workout","Full gym, about 7:00–8:15",wk),
+  T("07:30","water","Water 16–24 oz","Sip during the workout"),
+  T("08:30","meal","Other half of the shake",""),
+  T("10:00","water","Water 16 oz","Between meals, not with them"),
+  T("10:30","meal","Snack: eggs",EGGS),
+  T("12:00","meal","Lunch",LUNCH),
+  T("14:00","water","Water 16 oz","Caffeine cutoff around 1:30"),
+  T("15:30","meal","Snack: almonds, raisins, carrots",SNACK),
+  T("17:00","water","Water 16 oz",""),
+  T("18:00","meal","Dinner: salmon",SALMON),
+  T("20:00","water","Water 8 oz","Last big drink of the day")
+];}
+function office(extra){ return [
+  T("06:00","sleep","Up on time","In bed by 9:30 last night, up by 6:00"),
+  T("06:00","water","Water 16 oz",""),
+  T("06:10","meal","Shake + coffee",SHAKE+". Finish before or during the commute"),
+  T("09:30","water","Water 16 oz","Between meals, not with them"),
+  T("10:30","meal","Snack: eggs",EGGS),
+  T("12:00","meal","Lunch (packed)",LUNCH),
+  T("14:00","water","Water 16 oz","Caffeine cutoff around 1:30"),
+  T("15:30","meal","Snack: almonds, raisins, carrots",SNACK),
+  T("17:00","water","Water 16 oz","Before or early in the commute")
+].concat(extra);}
+const PLAN = {
+  0:{label:"Church, lunch out, shop and prep", tasks:[
+    T("06:30","sleep","Up on time","In bed by 9:30 last night, up by 6:30"),
+    T("06:30","water","Water 16 oz",""),
+    T("07:00","meal","Shake + coffee + 12 oz milk",SHAKE+". Drink the lunch milk now since lunch is out"),
+    T("11:00","water","Water 16 oz",""),
+    T("12:00","meal","Lunch out","Aim for 700–900 kcal, 35+ g protein, and a carb"),
+    T("14:00","water","Water 16 oz",""),
+    T("14:30","meal","Snack bag",EGGS+" plus "+SNACK.toLowerCase()),
+    T("17:30","meal","Dinner: beef pasta",BEEF+" (fresh from prep)"),
+    T("17:30","water","Water 16 oz",""),
+    T("19:30","water","Water 16 oz","During activities")]},
+  1:{label:"Work from home, Lower A, salmon night", tasks:wfh("lowerA","In bed by ~10 last night, up by 6:00")},
+  2:{label:"Office day, rest", tasks:office([T("19:15","meal","Dinner: beef pasta",BEEF+" (reheat)"),T("20:00","water","Water 8 oz","")])},
+  3:{label:"Office day, short upper", tasks:office([
+    T("19:05","workout","Short Upper workout","Apartment gym, supersets, about 7:05–7:45","upperS"),
+    T("19:25","water","Water 16 oz","Sip during the workout"),
+    T("19:50","meal","Dinner: beef pasta",BEEF+" (reheat)")])},
+  4:{label:"Office day, rest", tasks:office([T("19:15","meal","Dinner: beef pasta",BEEF+" (reheat)"),T("20:00","water","Water 8 oz","")])},
+  5:{label:"Work from home, Lower B, salmon night", tasks:wfh("lowerB","In bed by 9:30 last night, up by 6:00")},
+  6:{label:"Upper B", tasks:[
+    T("07:00","sleep","Up on time","In bed by 9:30 last night, up by 7:00"),
+    T("07:00","water","Water 16 oz",""),
+    T("07:15","meal","Shake + coffee",SHAKE),
+    T("10:00","water","Water 16 oz",""),
+    T("10:30","meal","Snack: eggs",EGGS),
+    T("11:30","meal","Lunch",LUNCH),
+    T("13:00","workout","Upper B workout","Full gym, about 1:00–2:15","upperB"),
+    T("13:30","water","Water 16–24 oz","Sip during the workout"),
+    T("14:30","meal","Snack: almonds, raisins, carrots",SNACK),
+    T("16:30","water","Water 16 oz",""),
+    T("18:30","meal","Dinner: beef pasta",BEEF+" (reheat)"),
+    T("20:00","water","Water 8 oz","")]}
+};
+const DAYNAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const WINDOW={water:30, meal:90, sleep:30, teeth:30};
+const ICON={water:"水",meal:"食",workout:"鍛",sleep:"眠",teeth:"歯"};
+const TYPE_NAME={water:"Water",meal:"Meal",workout:"Workout",sleep:"Sleep",teeth:"Teeth"};
+const START=new Date(2026,8,26).getTime(); // Quest day 1: Saturday, Sept 26, 2026
+// Brush teeth right before bed (appended last so existing task ids stay stable)
+for(let d=0; d<7; d++) PLAN[d].tasks.push(T(d===0?"21:50":"21:20","teeth","Brush teeth","Right before bed"));
+
+function tasksFor(dow){
+  return PLAN[dow].tasks.map((x,i)=>{
+    const [h,m]=x.t.split(":").map(Number); const at=h*60+m;
+    const open = x.type==="workout" ? at-120 : at-WINDOW[x.type];
+    const close = x.type==="workout" ? 23*60+59 : at+WINDOW[x.type];
+    return {...x, id:dow+"-"+i, at, open, close};
+  });
+}
+
+/* ---------------- State ---------------- */
+const LS_KEY="bulkQuest.v1";
+const DEFAULT_XP={water:5, meal:15, workout:25, sleep:10, teeth:10};
+function fresh(){ const s0=Math.max(Date.now(),START); return {v:1, startSet:true, startedAt:s0, teethFrom:s0, xp:0, days:{}, log:[], rewards:[], shop:[], xpv:{...DEFAULT_XP}, updatedAt:Date.now()}; }
+function migrate(st){ st.xpv={...DEFAULT_XP, ...(st.xpv||{})}; st.shop=st.shop||[]; st.rewards=st.rewards||[]; if(!st.teethFrom){ st.teethFrom=Date.now(); }
+  if(!st.startSet){ st.startSet=true; st.startedAt=START; st.teethFrom=START; st.xp=0; st.days={}; st.log=[]; }
+  return st; }
+let state = (()=>{ try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s&&s.v===1) return s; }catch(e){} return fresh(); })();
+state=migrate(state);
+
+let db=null, docRef=null, saveTimer=null;
+function save(){
+  state.updatedAt=Date.now();
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+  if(docRef){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ docRef.set(JSON.parse(JSON.stringify(state))).catch(()=>{}); }, 600); }
+}
+async function connectCloud(){
+  if(!window.claude || typeof window.claude.use!=="function") return;
+  try{
+    const [d,u] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if(!d||!u) return;
+    const uid = await u.id(); if(!uid) return;
+    db=d; docRef=db.doc("data/users/"+uid+"/state");
+    const snap = await docRef.get();
+    if(snap.exists){
+      const remote=snap.data();
+      if(remote && remote.v===1 && (remote.updatedAt||0) > (state.updatedAt||0)){
+        state=migrate(JSON.parse(JSON.stringify(remote)));
+        try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+        settle(); render(); return;
+      }
+    }
+    save();
+  }catch(e){ docRef=null; }
+}
+
+/* ---------------- Rules ---------------- */
+const penalty = type => Math.ceil(state.xpv[type]*1.5/5)*5;
+function levelInfo(xp){ let L=1, need=100, acc=0; while(xp>=acc+need){acc+=need; L++; need=100+50*(L-1);} return {L, into:xp-acc, need}; }
+const pad=n=>String(n).padStart(2,"0");
+const keyOf=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const dayStart=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+const atMin=(d,min)=>new Date(d.getFullYear(),d.getMonth(),d.getDate(),Math.floor(min/60),min%60).getTime();
+const fmt=min=>{ min=((min%1440)+1440)%1440; let h=Math.floor(min/60), m=min%60, ap=h<12?"AM":"PM"; h=h%12||12; return h+":"+pad(m)+" "+ap; };
+function dayRec(k){ return state.days[k] ||= {done:{}, missed:{}, skipped:{}, ex:{}}; }
+
+function addXP(delta, text, kind){
+  const before=levelInfo(state.xp).L;
+  state.xp=Math.max(0, state.xp+delta);
+  state.log.unshift({ts:Date.now(), d:delta, text, k:kind||""});
+  if(state.log.length>300) state.log.length=300;
+  return {before, after:levelInfo(state.xp).L};
+}
+function settle(){
+  const now=Date.now(); let changed=false;
+  let d=dayStart(new Date(state.startedAt)); const end=dayStart(new Date());
+  while(d<=end){
+    const k=keyOf(d), rec=dayRec(k);
+    for(const t of tasksFor(d.getDay())){
+      if(rec.done[t.id]||rec.missed[t.id]||rec.skipped[t.id]) continue;
+      const close=atMin(d,t.close);
+      if(now>close){
+        if(close<state.startedAt || (t.type==="teeth" && close<state.teethFrom)){ rec.skipped[t.id]=true; }
+        else { rec.missed[t.id]=true; addXP(-penalty(t.type), "Missed: "+t.title+" ("+DAYNAMES[d.getDay()].slice(0,3)+" "+fmt(t.at)+")"); }
+        changed=true;
+      }
+    }
+    d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);
+  }
+  if(changed) save();
+}
+function statusOf(t, rec, d){
+  if(rec.done[t.id]) return "done";
+  if(rec.missed[t.id]) return "missed";
+  if(rec.skipped[t.id]) return "skipped";
+  const now=Date.now();
+  if(now<atMin(d,t.open)) return "upcoming";
+  if(now>atMin(d,t.close)) return "missed";
+  return "open";
+}
+
+/* ---------------- UI ---------------- */
+let tab="today", weekDay=new Date().getDay();
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function renderHero(){
+  const {L,into,need}=levelInfo(state.xp);
+  $("#lvNum").textContent=L;
+  $("#xpInto").textContent=into+" / "+need+" XP";
+  $("#xpTotal").textContent=state.xp.toLocaleString()+" total";
+  const pct=Math.round(into/need*100); $("#bar").style.width=pct+"%"; $("#barWrap").setAttribute("aria-valuenow",pct);
+  const d=new Date(), rec=dayRec(keyOf(d)); let plus=0, minus=0;
+  for(const t of tasksFor(d.getDay())){ if(rec.done[t.id]) plus+=state.xpv[t.type]; if(rec.missed[t.id]) minus+=penalty(t.type); }
+  $("#todayLine").innerHTML = Date.now()<state.startedAt ? 'Quest starts '+DAYNAMES[new Date(state.startedAt).getDay()] : 'Today: <span class="g">+'+plus+'</span>'+(minus?' / <span class="b">−'+minus+'</span>':'');
+}
+function exList(t, rec, interactive){
+  const w=WORKOUTS[t.wk]; if(!w) return "";
+  return '<details'+(interactive?' open':'')+'><summary>Show exercises</summary><ul class="ex">'+w.ex.map((e,i)=>{
+    const id=t.id+"-e"+i, on=rec&&rec.ex&&rec.ex[id];
+    const label=interactive&&e[1]?'<label><input type="checkbox" data-ex="'+id+'"'+(on?' checked':'')+'> '+esc(e[0])+'</label>':'<span>'+esc(e[0])+'</span>';
+    return '<li>'+label+'<span>'+esc(e[1])+'</span></li>';
+  }).join("")+'</ul></details>';
+}
+function taskRow(t, rec, d, interactive){
+  const st = interactive ? statusOf(t,rec,d) : "plan";
+  let act="";
+  if(st==="open") act='<button class="btn go" data-do="'+t.id+'">+'+state.xpv[t.type]+'</button>';
+  else if(st==="done") act='<button class="tag done" data-undo="'+t.id+'" aria-label="Completed. Tap to undo">✓ +'+state.xpv[t.type]+'</button>';
+  else if(st==="missed") act='<span class="tag missed">−'+penalty(t.type)+'</span>';
+  else if(st==="upcoming") act='<span class="tag wait">Opens<br>'+fmt(t.open)+'</span>';
+  else if(st==="skipped") act='<span class="tag wait">—</span>';
+  else act='<span class="tag wait">+'+state.xpv[t.type]+'</span>';
+  const win = t.type==="workout" ? "any time today" : fmt(t.open)+"–"+fmt(t.close);
+  return '<div class="task '+st+(t.type==="workout"?" workout":"")+'"><div class="glyph" role="img" aria-label="'+TYPE_NAME[t.type]+'">'+ICON[t.type]+'</div><div class="body"><div class="time">'+fmt(t.at)+'</div>'+
+    '<div class="title">'+esc(t.title)+'</div>'+
+    (t.detail?'<div class="detail">'+esc(t.detail)+'</div>':'')+
+    (!interactive?'<div class="detail">Window: '+win+'</div>':'')+
+    (t.wk?exList(t, rec, interactive && st!=="missed"):'')+
+    '</div><div class="act">'+act+'</div></div>';
+}
+function renderToday(){
+  if(Date.now()<state.startedAt){
+    const sd=new Date(state.startedAt), ts0=tasksFor(sd.getDay()), first=ts0.reduce((a,t)=>t.open<a.open?t:a);
+    const hrs=Math.max(0,Math.ceil((atMin(sd,first.open)-Date.now())/3600000));
+    return '<h1><span class="jp">クエスト開始前</span>Your quest starts '+DAYNAMES[sd.getDay()]+'</h1>'+
+      '<div class="gate"><b>'+hrs+' h</b><div class="note">until your first check-in opens at '+fmt(first.open)+'. Nothing counts until then.</div></div>'+
+      '<h2>Day 1 plan<span class="jp">一日目</span></h2><p class="sub">'+esc(PLAN[sd.getDay()].label)+'</p><div class="list">'+ts0.map(t=>taskRow(t,null,null,false)).join("")+'</div>';
+  }
+  const d=new Date(), dow=d.getDay(), rec=dayRec(keyOf(d));
+  const ts=tasksFor(dow);
+  return '<h1><span class="jp">今日のミッション</span>'+DAYNAMES[dow]+'</h1><p class="sub">'+esc(PLAN[dow].label)+'</p><div class="list">'+
+    ts.map(t=>taskRow(t,rec,d,true)).join("")+'</div>'+
+    '<p class="note" style="margin-top:14px">Check items off inside their window: water ±30 min, meals ±90 min, wake-up ±30 min, workouts any time that day. Brush teeth ±30 min. Anything left unchecked when its window closes costs 1.5× its XP.</p>';
+}
+function renderWeek(){
+  const chips=DAYNAMES.map((n,i)=>'<button class="chip" data-wd="'+i+'" aria-pressed="'+(i===weekDay)+'">'+n.slice(0,3)+'</button>').join("");
+  const ts=tasksFor(weekDay);
+  const max=ts.reduce((s,t)=>s+state.xpv[t.type],0);
+  return '<h1><span class="jp">週間プラン</span>Week plan</h1><p class="sub">Tap a day to preview it.</p><div class="chips">'+chips+'</div>'+
+    '<h2>'+DAYNAMES[weekDay]+'</h2><p class="sub">'+esc(PLAN[weekDay].label)+'. Up to '+max+' XP.</p>'+
+    '<div class="list">'+ts.map(t=>taskRow(t,null,null,false)).join("")+'</div>';
+}
+function renderRewards(){
+  const L=levelInfo(state.xp).L;
+  const rs=[...state.rewards].sort((a,b)=>a.level-b.level);
+  const list = rs.length ? rs.map(r=>{
+    const unlocked=L>=r.level;
+    const right = r.claimed ? '<span class="tag done">Claimed</span>' :
+      unlocked ? '<button class="btn go" data-claim="'+r.id+'">Claim</button>' :
+      '<span class="tag wait">'+(r.level-L)+' level'+(r.level-L>1?'s':'')+' to go</span>';
+    return '<div class="card reward'+(unlocked?'':' locked')+'"><div><div class="lvreq">Level '+r.level+'</div><div class="name">'+esc(r.name)+'</div></div><div style="display:flex;gap:6px;align-items:center">'+right+
+      '<button class="tag wait" data-del="'+r.id+'" aria-label="Delete reward">✕</button></div></div>';
+  }).join("") : '<p class="empty">Add a milestone, like something you would look forward to at level 5.</p>';
+  const shop = state.shop.length ? state.shop.map(it=>{
+    const can = state.xp>=it.cost;
+    return '<div class="card reward'+(can?'':' locked')+'"><div><div class="lvreq">'+it.cost+' XP</div><div class="name">'+esc(it.name)+'</div>'+(it.count?'<div class="note">Redeemed '+it.count+'×</div>':'')+'</div><div style="display:flex;gap:6px;align-items:center">'+
+      (can?'<button class="btn go" data-redeem="'+it.id+'">Redeem</button>':'<span class="tag wait">Need '+(it.cost-state.xp)+' more</span>')+
+      '<button class="tag wait" data-sdel="'+it.id+'" aria-label="Delete item">✕</button></div></div>';
+  }).join("") : '<p class="empty">Add something you can buy with XP, like a takeout night or an hour of League guilt-free.</p>';
+  return '<h1><span class="jp">報酬</span>Rewards</h1><p class="sub">You have '+state.xp.toLocaleString()+' XP and are level '+L+'.</p>'+
+    '<h2>Spend XP<span class="jp">ショップ</span></h2><p class="note" style="margin-top:-4px">Redeeming spends XP, so your level can drop. Items can be redeemed again and again.</p>'+
+    '<div class="list">'+shop+'</div>'+
+    '<div class="card" style="margin-top:8px"><div class="form">'+
+    '<input id="sName" placeholder="e.g. Takeout night" aria-label="Item name" maxlength="80">'+
+    '<input id="sCost" type="number" min="5" max="100000" placeholder="XP cost" aria-label="XP cost" inputmode="numeric">'+
+    '<button class="btn go" id="sAdd">Add to XP shop</button></div></div>'+
+    '<h2>Level milestones<span class="jp">マイルストーン</span></h2><p class="note" style="margin-top:-4px">One-time rewards that unlock when you reach a level. Free to claim.</p>'+
+    '<div class="list">'+list+'</div>'+
+    '<div class="card" style="margin-top:8px"><div class="form">'+
+    '<input id="rName" placeholder="e.g. New game on Steam" aria-label="Reward name" maxlength="80">'+
+    '<input id="rLvl" type="number" min="2" max="200" placeholder="Level" aria-label="Unlock level" inputmode="numeric">'+
+    '<button class="btn go" id="rAdd">Add milestone</button></div></div>';
+}
+function renderLog(){
+  const done=state.log.filter(e=>e.d>0 && e.k!=="undo").length, miss=state.log.filter(e=>e.d<0 && !e.k).length;
+  const rows=state.log.slice(0,100).map(e=>'<div><span>'+esc(e.text)+'<time>'+new Date(e.ts).toLocaleString([], {weekday:"short",hour:"numeric",minute:"2-digit"})+'</time></span><span class="'+(e.k==="redeem"?'r':(e.d>0?'p':'m'))+'">'+(e.d>0?'+':'−')+Math.abs(e.d)+'</span></div>').join("");
+  const s=k=>'<label for="x_'+k+'">'+({water:"Water",meal:"Meal",workout:"Workout",sleep:"Up on time",teeth:"Brush teeth"})[k]+' <span class="note">(miss −'+penalty(k)+')</span></label><input id="x_'+k+'" type="number" min="0" max="500" value="'+state.xpv[k]+'" data-xp="'+k+'" inputmode="numeric">';
+  return '<h1><span class="jp">記録</span>Log</h1><div class="stats"><div class="stat"><b>'+state.xp.toLocaleString()+'</b><span>Total XP</span></div><div class="stat"><b>'+done+'</b><span>Completed</span></div><div class="stat"><b>'+miss+'</b><span>Missed</span></div></div>'+
+    '<h2>Recent</h2><div class="log">'+(rows||'<p class="empty">Nothing yet. Check off your next item on the Today tab.</p>')+'</div>'+
+    '<h2>XP values</h2><div class="card"><div class="settings">'+["water","meal","workout","sleep","teeth"].map(s).join("")+'</div>'+
+    '<p class="note">Missing an item costs 1.5× its XP, rounded up to the nearest 5.</p></div>'+
+    '<h2>Backup<span class="jp">バックアップ</span></h2><div class="card"><p class="note" style="margin-top:0">Your progress lives only on this phone. Copy a backup now and then and paste it in Notes, so you can restore it if the app is ever removed.</p>'+
+    '<div class="form" style="grid-template-columns:1fr"><button class="btn go" id="bkCopy">Copy backup code</button>'+
+    '<textarea id="bkText" rows="3" placeholder="Paste a backup code here to restore" aria-label="Backup code" style="border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--bg);padding:9px 10px;width:100%;font:12px/1.4 monospace;color:var(--ink)"></textarea>'+
+    '<button class="btn danger" id="bkRestore">Restore from code</button></div></div>'+
+    '<h2>Reset</h2><button class="btn danger" id="reset">Reset all progress</button>'+
+    '<p class="note">'+(docRef?'Progress syncs to your Claude account.':'Progress is saved on this device.')+'</p>';
+}
+function render(){
+  renderHero();
+  const v=$("#view");
+  v.innerHTML = tab==="today"?renderToday(): tab==="week"?renderWeek(): tab==="rewards"?renderRewards(): renderLog();
+  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-current", b.dataset.tab===tab?"page":"false"));
+}
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),1800); }
+function celebrate(L){
+  $("#luNum").textContent=L;
+  const unlocked=state.rewards.filter(r=>r.level===L && !r.claimed);
+  $("#luMsg").textContent = unlocked.length ? "Unlocked: "+unlocked.map(r=>r.name).join(", ") : "Level "+L+" reached.";
+  $("#levelup").classList.add("show"); $("#luClose").focus();
+}
+
+/* ---------------- Events ---------------- */
+document.addEventListener("click", e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.tab){ tab=b.dataset.tab; render(); window.scrollTo(0,0); return; }
+  const d=new Date(), k=keyOf(d), rec=dayRec(k), ts=tasksFor(d.getDay());
+  if(b.dataset.do){
+    const t=ts.find(x=>x.id===b.dataset.do); if(!t||statusOf(t,rec,d)!=="open") { render(); return; }
+    rec.done[t.id]=Date.now();
+    const r=addXP(state.xpv[t.type], t.title); save(); render(); toast("+"+state.xpv[t.type]+" XP");
+    if(r.after>r.before) celebrate(r.after);
+    return;
+  }
+  if(b.dataset.undo){
+    const t=ts.find(x=>x.id===b.dataset.undo); if(!t) return;
+    if(Date.now()>atMin(d,t.close)){ toast("That window has closed"); return; }
+    if(!confirm("Undo \""+t.title+"\"?")) return;
+    delete rec.done[t.id]; addXP(-state.xpv[t.type], "Undid: "+t.title, "undo"); save(); render(); return;
+  }
+  if(b.dataset.wd){ weekDay=Number(b.dataset.wd); render(); return; }
+  if(b.id==="rAdd"){
+    const name=$("#rName").value.trim(), lvl=parseInt($("#rLvl").value,10);
+    if(!name){ toast("Name the reward first"); $("#rName").focus(); return; }
+    if(!(lvl>=2)){ toast("Pick an unlock level of 2 or higher"); $("#rLvl").focus(); return; }
+    state.rewards.push({id:"r"+Date.now(), name, level:lvl, claimed:false}); save(); render(); toast("Reward added"); return;
+  }
+  if(b.id==="sAdd"){
+    const name=$("#sName").value.trim(), cost=parseInt($("#sCost").value,10);
+    if(!name){ toast("Name the item first"); $("#sName").focus(); return; }
+    if(!(cost>=5)){ toast("Set an XP cost of 5 or more"); $("#sCost").focus(); return; }
+    state.shop.push({id:"s"+Date.now(), name, cost, count:0}); save(); render(); toast("Added to XP shop"); return;
+  }
+  if(b.dataset.redeem){
+    const it=state.shop.find(x=>x.id===b.dataset.redeem); if(!it) return;
+    if(state.xp<it.cost){ toast("Not enough XP yet"); render(); return; }
+    const from=levelInfo(state.xp).L, to=levelInfo(state.xp-it.cost).L;
+    if(!confirm("Spend "+it.cost+" XP on \""+it.name+"\"?"+(to<from?" You'll drop from level "+from+" to "+to+".":""))) return;
+    addXP(-it.cost, "Redeemed: "+it.name, "redeem"); it.count=(it.count||0)+1; save(); render(); toast("Redeemed: "+it.name); return;
+  }
+  if(b.dataset.sdel){ const it=state.shop.find(x=>x.id===b.dataset.sdel); if(it&&confirm("Delete \""+it.name+"\"?")){ state.shop=state.shop.filter(x=>x!==it); save(); render(); } return; }
+  if(b.dataset.claim){ const r=state.rewards.find(x=>x.id===b.dataset.claim); if(r){ r.claimed=true; save(); render(); toast("Enjoy it: "+r.name);} return; }
+  if(b.dataset.del){ const r=state.rewards.find(x=>x.id===b.dataset.del); if(r&&confirm("Delete \""+r.name+"\"?")){ state.rewards=state.rewards.filter(x=>x!==r); save(); render(); } return; }
+  if(b.id==="bkCopy"){
+    const code=JSON.stringify(state);
+    const done=()=>toast("Backup copied");
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(code).then(done,()=>{ $("#bkText").value=code; $("#bkText").select(); toast("Select all and copy the code"); }); }
+    else { $("#bkText").value=code; $("#bkText").select(); toast("Select all and copy the code"); }
+    return;
+  }
+  if(b.id==="bkRestore"){
+    let data; try{ data=JSON.parse($("#bkText").value.trim()); }catch(e){ toast("That code isn't valid"); return; }
+    if(!data||data.v!==1||typeof data.xp!=="number"){ toast("That code isn't valid"); return; }
+    if(!confirm("Replace current progress with this backup?")) return;
+    state=migrate(data); save(); settle(); render(); toast("Backup restored"); return;
+  }
+  if(b.id==="reset"){ if(confirm("Reset all XP, levels, history and rewards? This can't be undone.")){ state=fresh(); save(); render(); toast("Progress reset"); } return; }
+  if(b.id==="luClose"){ $("#levelup").classList.remove("show"); return; }
+});
+document.addEventListener("change", e=>{
+  const el=e.target;
+  if(el.dataset.ex){ const rec=dayRec(keyOf(new Date())); rec.ex[el.dataset.ex]=el.checked; save(); return; }
+  if(el.dataset.xp){ const v=Math.max(0,Math.min(500,parseInt(el.value,10)||0)); state.xpv[el.dataset.xp]=v; save(); render(); }
+});
+
+settle(); render();
+setInterval(()=>{ settle(); if(tab!=="rewards" && tab!=="log") render(); else renderHero(); }, 30000);
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden){ settle(); render(); } });
+try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+</script>
+</body>
+</html>
